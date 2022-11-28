@@ -92,6 +92,7 @@ async def blague(ctx):
                           description=blague_random.answer,
                           color=discord.Color.blue()
                           )
+    embed.set_author(name="Blague Random")
     await ctx.respond(embed=embed)
 
 bot.run(dotenv_values()["TOKEN"])
