@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 from dotenv import dotenv_values
 import mysql.connector as mysql
+from blagues_api import BlaguesAPI
 
 intents = discord.Intents.all()
 bot = commands.Bot(intents=intents)
@@ -45,10 +46,13 @@ async def on_message(message: discord.Message):
         mydb.commit()
 
         await message.reply("feur")
+    if str(bot.user.id) in message.content.lower():
+        await message.reply("ptdr t ki")
+        print("BOT USER ----------------------\n", bot.user)
 
 
-@bot.slash_command(guild_ids=[dotenv_values()["GUILD_ID"]], description="Tu veux savoir combien de fois tu as été "
-                                                                        "feur ?")
+@bot.slash_command(name="feur",
+                   description="Tu veux savoir combien de fois tu as été feur ?")
 async def feur(ctx):
     mydb = mysql.connect(
         host=dotenv_values()["SQL_HOST"],
@@ -79,5 +83,15 @@ async def feur(ctx):
     embed.set_author(name=result[0][0])
     await ctx.respond(embed=embed)
 
+
+@bot.slash_command(name="blague", description="blague random")
+async def blague(ctx):
+    blagues = BlaguesAPI(dotenv_values()["BLAGUE_TOKEN"])
+    blague_random = await blagues.random()
+    embed = discord.Embed(title=blague_random.joke,
+                          description=blague_random.answer,
+                          color=discord.Color.blue()
+                          )
+    await ctx.respond(embed=embed)
 
 bot.run(dotenv_values()["TOKEN"])
