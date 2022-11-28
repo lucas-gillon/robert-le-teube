@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 from dotenv import dotenv_values
-import mysql.connector
+import mysql.connector as mysql
 
 intents = discord.Intents.all()
 bot = commands.Bot(intents=intents)
@@ -17,7 +17,7 @@ async def on_ready():
 @bot.event
 async def on_message(message: discord.Message):
     if "quoi" in message.content.lower():
-        mydb = mysql.connector.connect(
+        mydb = mysql.connect(
             host=dotenv_values()["SQL_HOST"],
             user=dotenv_values()["SQL_USER"],
             password=dotenv_values()["SQL_PASSWORD"],
@@ -50,7 +50,7 @@ async def on_message(message: discord.Message):
 @bot.slash_command(guild_ids=[dotenv_values()["GUILD_ID"]], description="Tu veux savoir combien de fois tu as été "
                                                                         "feur ?")
 async def feur(ctx):
-    mydb = mysql.connector.connect(
+    mydb = mysql.connect(
         host=dotenv_values()["SQL_HOST"],
         user=dotenv_values()["SQL_USER"],
         password=dotenv_values()["SQL_PASSWORD"],
