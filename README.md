@@ -1,5 +1,5 @@
 # robert-le-teube  
-This is my first Discord bot, made in Python with Pycord  
+This is my first Discord bot, made in Python with [Pycord](https://docs.pycord.dev/en/stable/)  
 
 The bot can :  
 - responds to "quoi" with "feur" :  
