@@ -25,8 +25,7 @@ async def on_message(message: discord.Message):
             database=dotenv_values()["SQL_DATABASE"]
         )
         mycursor = mydb.cursor()
-        sql = f"SELECT IF ( EXISTS ( SELECT * FROM times_pwned WHERE user ='{message.author}') ,'found','not " \
-              f"found') "
+        sql = f"SELECT IF ( EXISTS ( SELECT * FROM times_pwned WHERE user ='{message.author}') ,'found','not found') "
         mycursor.execute(sql)
         myresult = mycursor.fetchall()
         ifexists = myresult[0][0]
@@ -40,19 +39,18 @@ async def on_message(message: discord.Message):
         mycursor.execute(f"SELECT * FROM times_pwned WHERE user ='{message.author}'")
         myresult = mycursor.fetchall()
 
-        new_times = myresult[0][1] + 1
+        new_times = myresult[0][0] + 1
         sql = f"UPDATE times_pwned SET times = {new_times} WHERE user ='{message.author}'"
         mycursor.execute(sql)
         mydb.commit()
 
         await message.reply("feur")
+
     if str(bot.user.id) in message.content.lower():
         await message.reply("ptdr t ki")
-        print("BOT USER ----------------------\n", bot.user)
 
 
-@bot.slash_command(name="feur",
-                   description="Tu veux savoir combien de fois tu as été feur ?")
+@bot.slash_command(name="feur", description="Tu veux savoir combien de fois tu as été feur ?")
 async def feur(ctx):
     mydb = mysql.connect(
         host=dotenv_values()["SQL_HOST"],
@@ -75,12 +73,12 @@ async def feur(ctx):
     mycursor.execute(f"SELECT * FROM times_pwned WHERE user ='{ctx.author}'")
     result = mycursor.fetchall()
 
-    times = result[0][1]
+    times = result[0][0]
     embed = discord.Embed(title=f"Tu as été feur {times} fois",
                           description="Gros nul",
                           color=discord.Color.blue()
                           )
-    embed.set_author(name=result[0][0])
+    embed.set_author(name=result[0][1].split("#")[0])
     await ctx.respond(embed=embed)
 
 
@@ -94,5 +92,23 @@ async def blague(ctx):
                           )
     embed.set_author(name="Blague Random")
     await ctx.respond(embed=embed)
+
+
+@bot.slash_command(name="help", description="liste des commandes de Robert le Teubé")
+async def commands(ctx):
+    bot_pfp = bot.user.avatar.url
+    embed = discord.Embed(title="Liste des commandes",
+                          description="liste des commandes de Robert le Teubé",
+                          color=discord.Color.blue()
+                          )
+    embed.set_author(name=bot.user.name)
+    embed.set_thumbnail(url=bot_pfp)
+    embed.add_field(name="`/feur`", value="Pour savoir combien de fois tu as été 'feur'",
+                    inline=False)
+    embed.add_field(name="`/blague`", value="Pour afficher une blague random",
+                    inline=False)
+    embed.set_footer(text="Et plus à venir!")
+    await ctx.respond(embed=embed)
+
 
 bot.run(dotenv_values()["TOKEN"])
