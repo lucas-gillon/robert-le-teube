@@ -7,7 +7,7 @@ You can use the following commands :
     - if it's the first time you use this command, you are written in database with your discord ID and 0 times pwned
 - `/blague`:
   - displays a random joke in <u>**French**</u>
-  -  using ['blagues_api PyPi' package](https://www.blagues-api.fr/)
+  - using ['blagues_api PyPi' package](https://www.blagues-api.fr/)
 - Display a list of commands with `/help`
 
 Things that are done <u>automatically</u> :
