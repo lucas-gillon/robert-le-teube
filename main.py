@@ -97,30 +97,31 @@ async def blague(ctx):
 
 @bot.slash_command(name="help", description="liste des commandes de Robert le Teubé")
 async def commands(ctx):
-    bot_pfp = bot.user.avatar.url
     embed = discord.Embed(title="Liste des commandes de Robert le Teubé",
                           color=discord.Color.blue()
                           )
+    bot_pfp = bot.user.avatar.url
     embed.set_thumbnail(url=bot_pfp)
     embed.add_field(name="`/feur`", value="Pour savoir combien de fois tu as été 'feur'",
                     inline=False)
     embed.add_field(name="`/blague`", value="Pour afficher une blague random",
                     inline=False)
-    embed.add_field(name="`/wiki`", value="Pour rechercher des informations sur Wikipedia.\n Si le mot recherché est "
-                                          "'random', un article au hasard sera résumé"
+    embed.add_field(name="`/wiki`", value="Pour rechercher des informations sur Wikipedia.\n"
+                                          "Si le mot recherché est 'random', un article au hasard sera résumé.\n"
+                                          "⚠️ Si le mot recherché n'existe pas sur Wikipedia, la commande ne répondra pas."
                     )
     embed.set_footer(text="Et plus à venir!")
     await ctx.respond(embed=embed)
 
 
-@bot.slash_command(name="wiki", description="google search")
-async def wiki(ctx, query):
-    if query == "random":
+@bot.slash_command(name="wiki", description="Recherche sur Wikipedia")
+async def wiki(ctx, recherche):
+    if recherche == "random":
         wikipedia.set_lang("fr")
         await ctx.respond(wikipedia.summary(wikipedia.random(pages=1)))
     else:
         wikipedia.set_lang("fr")
-        search = wikipedia.summary(query, sentences=3)
+        search = wikipedia.summary(recherche, sentences=2)
         await ctx.respond(search)
 
 
