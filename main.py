@@ -1,8 +1,9 @@
 import discord
-from discord.ext import commands
-from dotenv import dotenv_values
 import mysql.connector as mysql
 from blagues_api import BlaguesAPI
+from discord.ext import commands
+from dotenv import dotenv_values
+import wikipedia
 
 intents = discord.Intents.all()
 bot = commands.Bot(intents=intents)
@@ -97,18 +98,30 @@ async def blague(ctx):
 @bot.slash_command(name="help", description="liste des commandes de Robert le Teubé")
 async def commands(ctx):
     bot_pfp = bot.user.avatar.url
-    embed = discord.Embed(title="Liste des commandes",
-                          description="liste des commandes de Robert le Teubé",
+    embed = discord.Embed(title="Liste des commandes de Robert le Teubé",
                           color=discord.Color.blue()
                           )
-    embed.set_author(name=bot.user.name)
     embed.set_thumbnail(url=bot_pfp)
     embed.add_field(name="`/feur`", value="Pour savoir combien de fois tu as été 'feur'",
                     inline=False)
     embed.add_field(name="`/blague`", value="Pour afficher une blague random",
                     inline=False)
+    embed.add_field(name="`/wiki`", value="Pour rechercher des informations sur Wikipedia.\n Si le mot recherché est "
+                                          "'random', un article au hasard sera résumé"
+                    )
     embed.set_footer(text="Et plus à venir!")
     await ctx.respond(embed=embed)
+
+
+@bot.slash_command(name="wiki", description="google search")
+async def wiki(ctx, query):
+    if query == "random":
+        wikipedia.set_lang("fr")
+        await ctx.respond(wikipedia.summary(wikipedia.random(pages=1)))
+    else:
+        wikipedia.set_lang("fr")
+        search = wikipedia.summary(query, sentences=3)
+        await ctx.respond(search)
 
 
 bot.run(dotenv_values()["TOKEN"])
