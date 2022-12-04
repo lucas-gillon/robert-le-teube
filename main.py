@@ -1,9 +1,9 @@
 import discord
 import mysql.connector as mysql
+import wikipedia
 from blagues_api import BlaguesAPI
 from discord.ext import commands
 from dotenv import dotenv_values
-import wikipedia
 
 intents = discord.Intents.all()
 bot = commands.Bot(intents=intents)
@@ -108,7 +108,8 @@ async def commands(ctx):
                     inline=False)
     embed.add_field(name="`/wiki`", value="Pour rechercher des informations sur Wikipedia.\n"
                                           "Si le mot recherché est 'random', un article au hasard sera résumé.\n"
-                                          "⚠️ Si le mot recherché n'existe pas sur Wikipedia, la commande ne répondra pas."
+                                          "⚠️ Si le mot recherché n'existe pas sur Wikipedia, la commande ne répondra "
+                                          "pas. "
                     )
     embed.set_footer(text="Et plus à venir!")
     await ctx.respond(embed=embed)
@@ -117,12 +118,24 @@ async def commands(ctx):
 @bot.slash_command(name="wiki", description="Recherche sur Wikipedia")
 async def wiki(ctx, recherche):
     if recherche == "random":
+        embed = discord.Embed(title="Vous avez recherché un article au hasard sur Wikipedia :",
+                              color=discord.Color.light_gray()
+                              )
+        embed.set_thumbnail(url="https://upload.wikimedia.org/wikipedia/commons/6/63/Wikipedia-logo.png")
         wikipedia.set_lang("fr")
-        await ctx.respond(wikipedia.summary(wikipedia.random(pages=1)))
+        article = wikipedia.random(pages=1)
+        embed.add_field(name=article, value=wikipedia.summary(article))
+        await ctx.respond(embed=embed)
     else:
+        embed = discord.Embed(title="Vous avez recherché sur Wikipedia :",
+                              color=discord.Color.light_gray()
+                              )
+        embed.set_thumbnail(url="https://upload.wikimedia.org/wikipedia/commons/6/63/Wikipedia-logo.png")
         wikipedia.set_lang("fr")
-        search = wikipedia.summary(recherche, sentences=2)
-        await ctx.respond(search)
+        article = wikipedia.summary(recherche, sentences=2)
+        print(article)
+        embed.add_field(name=recherche.capitalize(), value=article)
+        await ctx.respond(embed=embed)
 
 
 bot.run(dotenv_values()["TOKEN"])
