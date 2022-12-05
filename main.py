@@ -108,8 +108,6 @@ async def commands(ctx):
                     inline=False)
     embed.add_field(name="`/wiki`", value="Pour rechercher des informations sur Wikipedia.\n"
                                           "Si le mot recherché est 'random', un article au hasard sera résumé.\n"
-                                          "⚠️ Si le mot recherché n'existe pas sur Wikipedia, la commande ne répondra "
-                                          "pas. "
                     )
     embed.set_footer(text="Et plus à venir!")
     await ctx.respond(embed=embed)
@@ -137,7 +135,6 @@ async def wiki(ctx, query):
             embed.add_field(name=query.capitalize(), value=article)
             await ctx.respond(embed=embed)
     except wikipedia.exceptions.PageError:
-        print("pas marché")
         embed = discord.Embed(title="Vous avez recherché sur Wikipedia :",
                               color=discord.Color.light_gray()
                               )
