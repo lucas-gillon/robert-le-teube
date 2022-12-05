@@ -116,25 +116,34 @@ async def commands(ctx):
 
 
 @bot.slash_command(name="wiki", description="Recherche sur Wikipedia")
-async def wiki(ctx, recherche):
-    if recherche == "random":
-        embed = discord.Embed(title="Vous avez recherché un article au hasard sur Wikipedia :",
-                              color=discord.Color.light_gray()
-                              )
-        embed.set_thumbnail(url="https://upload.wikimedia.org/wikipedia/commons/6/63/Wikipedia-logo.png")
-        wikipedia.set_lang("fr")
-        article = wikipedia.random(pages=1)
-        embed.add_field(name=article, value=wikipedia.summary(article))
-        await ctx.respond(embed=embed)
-    else:
+async def wiki(ctx, query):
+    try:
+        if query == "random":
+            embed = discord.Embed(title="Vous avez recherché un article au hasard sur Wikipedia :",
+                                  color=discord.Color.light_gray()
+                                  )
+            embed.set_thumbnail(url="https://upload.wikimedia.org/wikipedia/commons/6/63/Wikipedia-logo.png")
+            wikipedia.set_lang("fr")
+            article = wikipedia.random(pages=1)
+            embed.add_field(name=article, value=wikipedia.summary(article))
+            await ctx.respond(embed=embed)
+        else:
+            embed = discord.Embed(title="Vous avez recherché sur Wikipedia :",
+                                  color=discord.Color.light_gray()
+                                  )
+            embed.set_thumbnail(url="https://upload.wikimedia.org/wikipedia/commons/6/63/Wikipedia-logo.png")
+            wikipedia.set_lang("fr")
+            article = wikipedia.summary(query, sentences=2)
+            embed.add_field(name=query.capitalize(), value=article)
+            await ctx.respond(embed=embed)
+    except wikipedia.exceptions.PageError:
+        print("pas marché")
         embed = discord.Embed(title="Vous avez recherché sur Wikipedia :",
                               color=discord.Color.light_gray()
                               )
         embed.set_thumbnail(url="https://upload.wikimedia.org/wikipedia/commons/6/63/Wikipedia-logo.png")
-        wikipedia.set_lang("fr")
-        article = wikipedia.summary(recherche, sentences=2)
-        print(article)
-        embed.add_field(name=recherche.capitalize(), value=article)
+        embed.add_field(name=query, value="la recherche n'a rien donné")
+        embed.set_footer(text="Essayez autre chose")
         await ctx.respond(embed=embed)
 
 
