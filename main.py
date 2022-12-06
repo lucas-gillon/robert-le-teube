@@ -1,6 +1,6 @@
 import discord
-import mysql.connector as mysql
 import wikipedia
+import pymongo
 from blagues_api import BlaguesAPI
 from discord.ext import commands
 from dotenv import dotenv_values
@@ -8,6 +8,10 @@ from dotenv import dotenv_values
 intents = discord.Intents.all()
 bot = commands.Bot(intents=intents)
 intents.message_content = True
+
+client = pymongo.MongoClient(dotenv_values()["MONGODB_URL"])
+db = client[dotenv_values()["MONGODB_DATABASE"]]
+col = db[dotenv_values()["MONGODB_COLLECTION"]]
 
 
 @bot.event
@@ -19,31 +23,30 @@ async def on_ready():
 @bot.event
 async def on_message(message: discord.Message):
     if "quoi" in message.content.lower():
-        mydb = mysql.connect(
-            host=dotenv_values()["SQL_HOST"],
-            user=dotenv_values()["SQL_USER"],
-            password=dotenv_values()["SQL_PASSWORD"],
-            database=dotenv_values()["SQL_DATABASE"]
-        )
-        mycursor = mydb.cursor()
-        sql = f"SELECT IF ( EXISTS ( SELECT * FROM times_pwned WHERE user ='{message.author}') ,'found','not found') "
-        mycursor.execute(sql)
-        myresult = mycursor.fetchall()
-        ifexists = myresult[0][0]
+        user: object = {}
+        for x in col.find({}, {"name": str(message.author), "times_pwned": 1}):
+            x.pop("_id")
+            user = x
+        is_user: bool = False
 
-        if ifexists == "not found":
-            mycursor = mydb.cursor()
-            sql = f"insert into times_pwned(user, times) values ('{message.author}', 0)"
-            mycursor.execute(sql)
-            mydb.commit()
+        try:
+            if user["name"] == str(message.author):
+                is_user = True
+        except KeyError:
+            user = {"name": "", "times_pwned": 0}
 
-        mycursor.execute(f"SELECT * FROM times_pwned WHERE user ='{message.author}'")
-        myresult = mycursor.fetchall()
+        if not is_user:
+            new_user = {"name": str(message.author), "times_pwned": 0}
+            col.insert_one(new_user)
+            myquery = {"name": str(message.author)}
+            new_values = {"$set": {"times_pwned": user["times_pwned"] + 1}}
 
-        new_times = myresult[0][0] + 1
-        sql = f"UPDATE times_pwned SET times = {new_times} WHERE user ='{message.author}'"
-        mycursor.execute(sql)
-        mydb.commit()
+            col.update_one(myquery, new_values)
+        else:
+            myquery = {"name": str(message.author)}
+            new_values = {"$set": {"times_pwned": user["times_pwned"] + 1}}
+
+            col.update_one(myquery, new_values)
 
         await message.reply("feur")
 
@@ -53,33 +56,31 @@ async def on_message(message: discord.Message):
 
 @bot.slash_command(name="feur", description="Tu veux savoir combien de fois tu as été feur ?")
 async def feur(ctx):
-    mydb = mysql.connect(
-        host=dotenv_values()["SQL_HOST"],
-        user=dotenv_values()["SQL_USER"],
-        password=dotenv_values()["SQL_PASSWORD"],
-        database=dotenv_values()["SQL_DATABASE"]
-    )
-    mycursor = mydb.cursor()
-    sql = f"SELECT IF ( EXISTS ( SELECT * FROM times_pwned WHERE user ='{ctx.author}') ,'found','not found') "
-    mycursor.execute(sql)
-    myresult = mycursor.fetchall()
-    ifexists = myresult[0][0]
+    user: object = {}
+    for x in col.find({}, {"name": str(ctx.author), "times_pwned": 1}):
+        x.pop("_id")
+        user = x
 
-    if ifexists == "not found":
-        mycursor = mydb.cursor()
-        sql = f"insert into times_pwned(user, times) values ('{ctx.author}', 0)"
-        mycursor.execute(sql)
-        mydb.commit()
+    is_user: bool = False
 
-    mycursor.execute(f"SELECT * FROM times_pwned WHERE user ='{ctx.author}'")
-    result = mycursor.fetchall()
+    try:
+        if user["name"] == str(ctx.author):
+            is_user = True
+            print("is user", is_user, user)
+    except KeyError:
+        user = {"name": "patate", "times_pwned": 0}
+        print(user)
 
-    times = result[0][0]
+    if not is_user:
+        new_user = {"name": str(ctx.author), "times_pwned": 0}
+        col.insert_one(new_user)
+    times = user["times_pwned"]
+    
     embed = discord.Embed(title=f"Tu as été feur {times} fois",
                           description="Gros nul",
                           color=discord.Color.blue()
                           )
-    embed.set_author(name=result[0][1].split("#")[0])
+    embed.set_author(name=user["name"].split("#")[0])
     await ctx.respond(embed=embed)
 
 
