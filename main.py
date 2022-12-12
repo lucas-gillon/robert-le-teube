@@ -38,9 +38,9 @@ async def on_message(message: discord.Message):
         if not is_user:
             new_user = {"name": str(message.author), "times_pwned": 0}
             col.insert_one(new_user)
+
             myquery = {"name": str(message.author)}
             new_values = {"$set": {"times_pwned": user["times_pwned"] + 1}}
-
             col.update_one(myquery, new_values)
         else:
             myquery = {"name": str(message.author)}
@@ -66,10 +66,8 @@ async def feur(ctx):
     try:
         if user["name"] == str(ctx.author):
             is_user = True
-            print("is user", is_user, user)
     except KeyError:
         user = {"name": "patate", "times_pwned": 0}
-        print(user)
 
     if not is_user:
         new_user = {"name": str(ctx.author), "times_pwned": 0}
